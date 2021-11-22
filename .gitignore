@@ -4,3 +4,4 @@
 /pyspark/examples/metastore_db/
 /pyspark/examples/spark-warehouse/
 /pyspark/examples/derby.log
+/mapr/fax/
