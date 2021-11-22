@@ -6,22 +6,12 @@ import pyspark.sql.functions as f
 
 spark = SparkSession.builder.appName("Ejemplo 1 bases2").getOrCreate()
 
-# csv_schema = StructType([StructField('_id', StringType(), True),
-#                          StructField('artist_name', StringType(), True),
-#                          StructField('track_name', StringType(), True),
-#                          StructField('release_date', StringType(), True),
-#                          StructField('genre', StringType(), True),
-#                          StructField('lyrics', StringType(), True),
-#                          StructField('len', StringType(), True),
-#                          ])
+schema = StructType
 
-
-# dataframe = spark.read.parquet("./dest") \
-#     .selectExpr("CAST(value AS STRING)") \
-
+#RAW VIBES
 dataframe = spark.read \
     .format("parquet") \
-    .load("./dest")
+    .load("./dest/raw") 
 
 filtered_Df = dataframe.select(f.split(dataframe.value,",")) \
               .rdd.flatMap(lambda x: x) \
@@ -36,6 +26,18 @@ queryConSparkSQL = spark.sql("""
 
 queryConSparkSQL.show()
 
-dataframe.printSchema()
 
-filtered_Df.printSchema()
+#Additional
+dataframe = spark.read \
+    .format("parquet") \
+    .load("./dest/additional") 
+
+schema = StructType().add('word', StringType(), False).add('type', StringType(), False)
+filtered_Df_log = dataframe.select(f.from_json('value', schema).alias('temp')).select('temp.*')
+
+filtered_Df_log.createOrReplaceTempView("additionalvibes")
+
+queryConSparkSQL = spark.sql("""
+  select *
+  from additionalvibes
+""")

@@ -5,3 +5,7 @@
 /pyspark/examples/spark-warehouse/
 /pyspark/examples/derby.log
 /mapr/fax/
+/logstash/dead_letter_queue/
+/logstash/queue/
+/logstash/.lock
+/logstash/uuid

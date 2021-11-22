@@ -1,0 +1,14 @@
+version: "3.4"
+
+services:
+  logstash:
+    build: .
+    networks:
+      - ftvnet
+    volumes:
+      - ./pipeline:/usr/share/logstash/pipeline/
+      - ./data:/usr/share/logstash/data
+
+networks:
+  ftvnet:
+    external: true

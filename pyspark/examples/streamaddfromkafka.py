@@ -9,20 +9,21 @@ import pyspark.sql.functions as f
 spark = SparkSession.builder.appName("Integracion con Kafka").getOrCreate()
 spark.sparkContext.setLogLevel("ERROR")
 
-df = spark \
+#logstash producer
+df_log = spark \
   .readStream \
   .format("kafka") \
   .option("kafka.bootstrap.servers", "10.0.0.2:9092") \
-  .option("subscribe", "raw_vibes") \
+  .option("subscribe", "additional_vibes") \
   .load() 
 
-filtered_df = df.selectExpr("CAST(value AS STRING)")
+filtered_df_log = df_log.selectExpr("CAST(value AS STRING)")
 
-query = filtered_df.writeStream \
+query = filtered_df_log.writeStream \
   .format("parquet") \
   .outputMode("append") \
-  .option("path", "./dest") \
-  .option("checkpointLocation", "./checkpoints") \
+  .option("path", "./dest/additional") \
+  .option("checkpointLocation", "./checkpoints/additional") \
   .start()
 query.awaitTermination()
 
