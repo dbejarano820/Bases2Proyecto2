@@ -1,0 +1,73 @@
+### docker related  
+Build the image, create an internal network and run the image using a local volumen
+path to share files and jars from the host computer
+```
+docker build . -t hadoop-proyecto
+
+docker network create --driver bridge --subnet 10.0.0.0/28 ftvnet
+
+docker run -it -p 9000:9000 -p 9092:9092 -p 22:22 -v /Users/danielbejarano/Desktop/BaseDeDatos2/Proyects/Bases2Proyecto2/mapr:/home/hadoopuser/mapr --name ftv-kafka --net ftvnet --ip 10.0.0.2 hadoop   
+
+### ssh related
+The image includes a default user setup, the user "hadoopuser" must grant passwordless access by ssh, this is required for the hadoop server
+
+```
+su - hadoopuser
+cd /home/hadoopuser
+ssh-keygen -t rsa -P '' -f /home/hadoopuser/.ssh/id_rsa
+ssh-copy-id hadoopuser@localhost
+exit
+```
+
+### hadoop related
+These are the commands to start/stop the hadoop single node cluster in /opt/hadoop/hadoop-3.3.0/sbin
+```
+start-all.sh
+stop-all.sh
+```
+
+These are example of instructions to prepare hdfs folders and run a map reduce example
+```
+hadoop fs -mkdir /data
+hadoop fs -mkdir /data/input
+hadoop fs -copyFromLocal datasales.dat /data/input
+hadoop fs -copyFromLocal presupuesto.csv /data/input
+
+```
+
+
+### Kakfa related
+To start the kafkta server just run the script /home/hadoopuser/start-kafka.sh located in the hadoopuser home folder from the folder /opt/kafka_2.13-3.0.0/
+
+
+#create topics
+./kafka-topics.sh --create --topic raw_vibes --partitions 1 --replication-factor 1 --bootstrap-server localhost:9092 
+./kafka-topics.sh --create --topic processed_vibes --partitions 1 --replication-factor 1 --bootstrap-server localhost:9092 
+./kafka-topics.sh --create --topic additional_vibes --partitions 1 --replication-factor 1 --bootstrap-server localhost:9092 
+
+#test pipes
+./kafka-console-producer.sh --topic raw_vibes --bootstrap-server localhost:9092 
+./kafka-console-consumer.sh --topic raw_vibes --from-beginning --bootstrap-server localhost:9092
+
+#see lists of topics
+./kafka-topics.sh --list --bootstrap-server localhost:9092
+
+
+#run initial kafka producer
+java -jar kafka-producer.jar
+
+
+#run spark s
+
+./kafka-acls.sh --authorizer-properties zookeeper.connect=localhost:9092 --add --allow-principal User:ANONYMOUS --operation All --topic=* --group=* --cluster
+
+https://www.youtube.com/watch?v=UcWi3-FODjs ; se recomienda usarlo hasta tener el producer de datos en java code of the video https://github.com/binodsuman/kafka-spark-streaming-integration
+
+Luego integrar con Spark Streaming direct, https://spark.apache.org/docs/latest/structured-streaming-kafka-integration.html#deploying https://spark.apache.org/docs/latest/streaming-programming-guide.html
+
+Si por alguna incompatibilidad de versiones no funciona el direct streaming con kafka, primero tratar de tener las mismas versiones de los jar en todos los ambientes y programas; y volver a probar. Si no, ir al punto #1 y hacer el consumer de spark en java
+
+Complementos
+Ejemplo completo con direct streaming y docker https://medium.com/data-arena/enabling-streaming-data-with-spark-structured-streaming-and-kafka-93ce91e5b435
+
+Link de suplemento https://hevodata.com/learn/spark-streaming-and-kafka-integration/

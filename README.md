@@ -1,2 +1,4 @@
-# Bases2Proyecto2
-Segundo Proyecto de Bases de Datos 2
+Daniel Bejarano Alfaro, 2020425953
+Pamela Dinarte
+
+Bases de Datos 2, Segundo Proyecto

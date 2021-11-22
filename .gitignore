@@ -1,0 +1,6 @@
+.DS_Store
+/pyspark/examples/checkpoints
+/pyspark/examples/dest
+/pyspark/examples/metastore_db/
+/pyspark/examples/spark-warehouse/
+/pyspark/examples/derby.log
