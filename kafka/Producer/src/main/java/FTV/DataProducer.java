@@ -32,8 +32,11 @@ public class DataProducer implements IConstants {
             Stream<String> FileStream = Files.lines(Paths.get("./fax/"+CsvFile));
 
             FileStream.forEach(line -> {
-                System.out.println(line);
-
+                
+                StringBuilder sb = new StringBuilder();
+                String[] s = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
+                sb.append(s[0]).append(";").append(s[1]).append(";").append(s[2]).append(";").append(s[3]).append(";").append(s[4]).append(";").append(s[5]).append(";").append(s[6]);
+                line = sb.toString();
                 final ProducerRecord<String, String> csvRecord = new ProducerRecord<String, String>(
                         TOPIC, UUID.randomUUID().toString(), line);
 

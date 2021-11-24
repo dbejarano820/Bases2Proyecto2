@@ -7,5 +7,5 @@
 /mapr/fax/
 /logstash/dead_letter_queue/
 /logstash/queue/
-/logstash/.lock
-/logstash/uuid
+/logstash/data/.lock
+/logstash/data/uuid
