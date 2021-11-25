@@ -49,6 +49,8 @@ To start the kafkta server just run the script /home/hadoopuser/start-kafka.sh l
 ./kafka-console-producer.sh --topic raw_vibes --bootstrap-server localhost:9092 
 ./kafka-console-consumer.sh --topic raw_vibes --from-beginning --bootstrap-server localhost:9092
 
+./kafka-console-consumer.sh --topic processed_vibes --from-beginning --bootstrap-server localhost:9092
+
 #see lists of topics
 ./kafka-topics.sh --list --bootstrap-server localhost:9092
 
