@@ -13,7 +13,7 @@ spark.sparkContext.setLogLevel("ERROR")
 
 
 #RAW VIBES
-'''
+
 dataframe = spark.read \
     .format("parquet") \
     .load("./dest/raw") 
@@ -21,16 +21,16 @@ dataframe = spark.read \
 filtered_df = dataframe.select(f.split(dataframe.value,";")) \
               .rdd.flatMap(lambda x: x) \
               .toDF(schema=["_id","artist_name","track_name", "release_date", "genre", "lyrics", "len"])
-'''
 
-#-----------------------------------------------------------------------------------
-filtered_df = spark.read.options(header='True', inferSchema='True', delimiter=';') \
-    .csv("pruebas/lyrics.csv")
-#filtered_df.show()
-#-----------------------------------------------------------------------------------
+
+# #-----------------------------------------------------------------------------------
+# filtered_df = spark.read.options(header='True', inferSchema='True', delimiter=';') \
+#     .csv("pruebas/lyrics.csv")
+# #filtered_df.show()
+# #-----------------------------------------------------------------------------------
 
 # #Additional
-'''
+
 dataframe = spark.read \
     .format("parquet") \
     .load("./dest/additional") 
@@ -39,14 +39,13 @@ schema = StructType().add('word', StringType(), False).add('type', StringType(),
 filtered_Df_log = dataframe.select(f.from_json('value', schema).alias('temp')).select('temp.*')
 
 filtered_Df_log.createOrReplaceTempView("additionalvibes")
-'''
 
-#-----------------------------------------------------------------------------------
-filtered_Df_log = spark.read.options(header='True', inferSchema='True', delimiter=';') \
-    .csv("pruebas/sentiment.csv")
-#filtered_Df_log.show()
-filtered_Df_log.createOrReplaceTempView("additionalvibes")
-#-----------------------------------------------------------------------------------
+# #-----------------------------------------------------------------------------------
+# filtered_Df_log = spark.read.options(header='True', inferSchema='True', delimiter=';') \
+#     .csv("pruebas/sentiment.csv")
+# #filtered_Df_log.show()
+# filtered_Df_log.createOrReplaceTempView("additionalvibes")
+# #-----------------------------------------------------------------------------------
 
 ### ANALYSIS ####
 def getLyricsPercentage(lyrics):
@@ -168,6 +167,19 @@ topicC = topicC.withColumn('question', f.lit('c'))
 topicC.show(truncate=False)
 #enviar a processed_vibes
 
+data = [("reset", "flush")]
+rdd = spark.sparkContext.parallelize(data)
+dfFromRDD1 = rdd.toDF(schema=["key", "value"])
+
+dfFromRDD1.show()
+
+query = dfFromRDD1 \
+  .selectExpr("CAST(value AS STRING)") \
+  .write \
+  .format("kafka") \
+  .option("kafka.bootstrap.servers", "10.0.0.2:9092") \
+  .option("topic", "processed_vibes") \
+  .save()
 
 json_df = topicA.select(f.col("year"), f.to_json(f.struct("*"))).toDF("key", "value")
 query = json_df \

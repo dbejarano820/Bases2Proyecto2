@@ -1,3 +1,8 @@
+//----------------------------
+Pame:       172.30.10.175
+DANI:       172.30.132.156
+//----------------------------
+
 ### docker related  
 Build the image, create an internal network and run the image using a local volumen
 path to share files and jars from the host computer
@@ -57,6 +62,8 @@ To start the kafkta server just run the script /home/hadoopuser/start-kafka.sh l
 
 #run initial kafka producer
 java -jar kafka-producer.jar
+
+java -jar kafka-consum.jar
 
 
 #run spark s
