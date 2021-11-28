@@ -119,6 +119,7 @@ sentiment_by_year = spark.sql("select year," +\
         "sum(case when sentiment= 'negative' then 1 else 0 end) AS negative " +\
         "from analyzed_songs group by year")
 topicA = sentiment_by_year.rdd.map(lambda x: calculateValuesA(x)).toDF(schema=["year", "positive", "negative", "total", "ratio"])
+topicA = topicA.withColumn('question', f.lit('a'))
 topicA.show()
 #enviar a processed_vibes
 
@@ -137,6 +138,7 @@ sentiment_by_genre_year = spark.sql("select genre, year," +\
         "sum(case when sentiment= 'negative' then 1 else 0 end) AS negative " +\
         "from analyzed_songs group by genre, year")
 topicB = sentiment_by_genre_year.rdd.map(lambda x: calculateValuesB(x)).toDF(schema=["genre", "year", "positive", "negative", "total", "ratio"])
+topicB = topicB.withColumn('question', f.lit('b'))
 topicB.show()
 #enviar a processed_vibes
 
@@ -162,12 +164,12 @@ themes_per_year = analyzed_df\
     )
 #themes_per_year.show(truncate=False)
 topicC = themes_per_year.rdd.map(lambda x: getThemePerYear(x)).toDF(schema=["year", "themes"])
+topicC = topicC.withColumn('question', f.lit('c'))
 topicC.show(truncate=False)
 #enviar a processed_vibes
 
-'''
-json_df = final_df.select(f.col("song"), f.to_json(f.struct("*"))).toDF("key", "value")
 
+json_df = topicA.select(f.col("year"), f.to_json(f.struct("*"))).toDF("key", "value")
 query = json_df \
   .selectExpr("CAST(value AS STRING)") \
   .write \
@@ -175,7 +177,23 @@ query = json_df \
   .option("kafka.bootstrap.servers", "10.0.0.2:9092") \
   .option("topic", "processed_vibes") \
   .save()
-'''
 
+json_df = topicB.select(f.col("genre"), f.to_json(f.struct("*"))).toDF("key", "value")
+query = json_df \
+  .selectExpr("CAST(value AS STRING)") \
+  .write \
+  .format("kafka") \
+  .option("kafka.bootstrap.servers", "10.0.0.2:9092") \
+  .option("topic", "processed_vibes") \
+  .save()
+
+json_df = topicC.select(f.col("year"), f.to_json(f.struct("*"))).toDF("key", "value")
+query = json_df \
+  .selectExpr("CAST(value AS STRING)") \
+  .write \
+  .format("kafka") \
+  .option("kafka.bootstrap.servers", "10.0.0.2:9092") \
+  .option("topic", "processed_vibes") \
+  .save()
 
 
