@@ -3,16 +3,18 @@ To build the image and run it
 ```
 docker build . -t pyspark
 
-docker run -it --name ftv_spark --rm -p 7077:7077 -v /Users/danielbejarano/Desktop/BaseDeDatos2/Proyects/Bases2Proyecto2/pyspark/examples:/src --net ftvnet --ip 10.0.0.3 pyspark bash
+docker run -it --name ftv-park --rm -p 7077:7077 -v /Users/danielbejarano/Desktop/BaseDeDatos2/Proyects/Bases2Proyecto2/pyspark/examples:/src --net ftvnet --ip 10.0.0.3 pyspark bash
 
 ```
 
 ### pyspark related
 To run the examples use the spark-submit command, for example:
 
-spark-submit --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.0.0-preview2 read.py
+spark-submit --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.0.0 read.py
 
 ### ejercicio de integracion con spark
-spark-submit --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.0.0 streamfromkafka.py
+spark-submit --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.0.0 streamaddfromkafka.py
+spark-submit --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.0.0 streamrawfromkafka.py
+
 
 ```

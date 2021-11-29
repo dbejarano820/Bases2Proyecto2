@@ -45,7 +45,7 @@ public class Consumer implements IConstants {
             // Connection conn = DriverManager.getConnection(connection, USER, PASSWORD);
 
             Connection conn = DriverManager
-                    .getConnection("jdbc:mariadb://localhost:3306/feel_the_vibes?user=root&password=pamela1234");
+                    .getConnection("jdbc:mariadb://172.30.10.175:3306/feel_the_vibes?user=root&password=pamela1234");
             System.out.println("SE CONECTO A LA DB");
             while (true) {
 
@@ -58,7 +58,24 @@ public class Consumer implements IConstants {
                 for (ConsumerRecord<String, String> record : records) {
                     // System.out.printf("key = %s, value = %s%n", record.key(), record.value());
                     // se extrae la fila
+                    System.out.println(record.toString());
+                    if(record.value().equals("flush")){
+                        //flush memsql
+                        PreparedStatement stmt = conn
+                                .prepareStatement("TRUNCATE TABLE questionA;");
+                        stmt.executeQuery();
+                        stmt = conn
+                                .prepareStatement("TRUNCATE TABLE questionB;");
+                        stmt.executeQuery();
+                        stmt = conn
+                                .prepareStatement("TRUNCATE TABLE questionC;");
+                        stmt.executeQuery();
+                        continue;
+                    }
+
+
                     JSONObject row = new JSONObject(record.value());
+                    System.out.println(row);
                     int year = Integer.parseInt(row.getString("year"));
 
                     // transforma los datos y los envia
@@ -69,10 +86,10 @@ public class Consumer implements IConstants {
                         stmt.setString(2, row.getString("themes"));
                         stmt.executeUpdate();
                     } else {
-                        int positive = Integer.parseInt(row.getString("positive"));
-                        int negative = Integer.parseInt(row.getString("negative"));
-                        int total = Integer.parseInt(row.getString("total"));
-                        double ratio = Double.parseDouble(row.getString("ratio"));
+                        int positive = row.getInt("positive");
+                        int negative =  row.getInt("negative");
+                        int total =  row.getInt("total");
+                        double ratio =  row.getDouble("ratio");
                         if (row.getString("question").equals("a")) {
                             PreparedStatement stmt = conn.prepareStatement(
                                     "INSERT INTO questionA (year, positive, negative, total, ratio) VALUES (?, ?, ?, ?, ?)");

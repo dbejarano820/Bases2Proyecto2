@@ -35,19 +35,21 @@ public class DataProducer implements IConstants {
                 
                 StringBuilder sb = new StringBuilder();
                 String[] s = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
-                sb.append(s[0]).append(";").append(s[1]).append(";").append(s[2]).append(";").append(s[3]).append(";").append(s[4]).append(";").append(s[5]).append(";").append(s[6]);
-                line = sb.toString();
-                final ProducerRecord<String, String> csvRecord = new ProducerRecord<String, String>(
-                        TOPIC, UUID.randomUUID().toString(), line);
+                if(!s[1].equals("artist_name")){
+                    sb.append(s[0]).append(";").append(s[1]).append(";").append(s[2]).append(";").append(s[3]).append(";").append(s[4]).append(";").append(s[5]).append(";").append(s[6]);
+                    line = sb.toString();
+                    final ProducerRecord<String, String> csvRecord = new ProducerRecord<String, String>(
+                            TOPIC, UUID.randomUUID().toString(), line);
 
-                this.theproducer.send(csvRecord, (metadata, exception) -> {
-                    if(metadata != null){
-                        System.out.println("CsvData: -> "+ csvRecord.key()+" | "+ csvRecord.value());
-                    }
-                    else{
-                        System.out.println("Error Sending Csv Record -> "+ csvRecord.value());
-                    }
-                });
+                    this.theproducer.send(csvRecord, (metadata, exception) -> {
+                        if(metadata != null){
+                            System.out.println("CsvData: -> "+ csvRecord.key()+" | "+ csvRecord.value());
+                        }
+                        else{
+                            System.out.println("Error Sending Csv Record -> "+ csvRecord.value());
+                        }
+                    });
+                }
             });
 
         } catch (IOException e) {
