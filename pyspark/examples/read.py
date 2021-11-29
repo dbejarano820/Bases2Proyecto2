@@ -13,7 +13,7 @@ spark.sparkContext.setLogLevel("ERROR")
 
 
 #RAW VIBES
-
+'''
 dataframe = spark.read \
     .format("parquet") \
     .load("./dest/raw") 
@@ -21,16 +21,16 @@ dataframe = spark.read \
 filtered_df = dataframe.select(f.split(dataframe.value,";")) \
               .rdd.flatMap(lambda x: x) \
               .toDF(schema=["_id","artist_name","track_name", "release_date", "genre", "lyrics", "len"])
+'''
 
-
-# #-----------------------------------------------------------------------------------
-# filtered_df = spark.read.options(header='True', inferSchema='True', delimiter=';') \
-#     .csv("pruebas/lyrics.csv")
-# #filtered_df.show()
-# #-----------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------
+filtered_df = spark.read.options(header='True', inferSchema='True', delimiter=';') \
+    .csv("pruebas/lyrics.csv")
+#filtered_df.show()
+#-----------------------------------------------------------------------------------
 
 # #Additional
-
+'''
 dataframe = spark.read \
     .format("parquet") \
     .load("./dest/additional") 
@@ -39,19 +39,26 @@ schema = StructType().add('word', StringType(), False).add('type', StringType(),
 filtered_Df_log = dataframe.select(f.from_json('value', schema).alias('temp')).select('temp.*')
 
 filtered_Df_log.createOrReplaceTempView("additionalvibes")
+'''
+#-----------------------------------------------------------------------------------
+filtered_Df_log = spark.read.options(header='True', inferSchema='True', delimiter=';') \
+    .csv("pruebas/sentiment.csv")
+#filtered_Df_log.show()
+filtered_Df_log.createOrReplaceTempView("additionalvibes")
+#-----------------------------------------------------------------------------------
 
-# #-----------------------------------------------------------------------------------
-# filtered_Df_log = spark.read.options(header='True', inferSchema='True', delimiter=';') \
-#     .csv("pruebas/sentiment.csv")
-# #filtered_Df_log.show()
-# filtered_Df_log.createOrReplaceTempView("additionalvibes")
-# #-----------------------------------------------------------------------------------
+
+#Exclude list
+exclude_df = spark.read.csv("pruebas/exclude.csv")
+exclude_df = exclude_df.withColumnRenamed("_c0", "word")
+#exclude_df.show()
+#-----------------------------------------------------------------------------------
 
 ### ANALYSIS ####
 def getLyricsPercentage(lyrics):
     arr = []
-    split_lyrics = lyrics.split(" ")
-    for x in split_lyrics:
+    #split_lyrics = lyrics.split(" ")
+    for x in lyrics:
         a = random.randint(1,100)
         if (a < 100):  #Percetmage sample of lyrics
             arr.append(x)
@@ -94,14 +101,28 @@ def getMainThemes(lyrics):
 
     return themes[0]+","+themes[1]+","+themes[2]
 
+def excludeLyrics(lyrics):
+    arr = []
+    split_lyrics = lyrics.split(" ")
+
+    for word in split_lyrics:
+        #si es == 0 es porque no esta en el dictionario y por lo tanto no debe ser excluida
+        if exclude_dict.get(word, 0) == 0:
+            arr += [word]
+    return (arr)
+
 def analyze(rec):
-    arr_lyrics = getLyricsPercentage(rec.lyrics)
+    arr_with_exclusion = excludeLyrics(rec.lyrics)
+    arr_lyrics = getLyricsPercentage(arr_with_exclusion)
     sentiment = getRowSentiment(arr_lyrics)
     themes = getMainThemes(arr_lyrics)
     return (rec.track_name, rec.release_date, sentiment, rec.genre, themes)
     #Cancion, año, sentimiento, genero, tema central
 
 additional_dict = {row['word']:row['type'] for row in filtered_Df_log.collect()}
+exclude_dict = {row['word']: 1 for row in exclude_df.collect()}
+#print(exclude_dict)
+
 analyzed_df = filtered_df.rdd.map(lambda x: analyze(x)).toDF(schema=["song", "year", "sentiment", "genre", "theme"])
 analyzed_df.createOrReplaceTempView("analyzed_songs")
 analyzed_df.show()
@@ -120,8 +141,6 @@ sentiment_by_year = spark.sql("select year," +\
 topicA = sentiment_by_year.rdd.map(lambda x: calculateValuesA(x)).toDF(schema=["year", "positive", "negative", "total", "ratio"])
 topicA = topicA.withColumn('question', f.lit('a'))
 topicA.show()
-#enviar a processed_vibes
-
 
 
 
@@ -139,7 +158,6 @@ sentiment_by_genre_year = spark.sql("select genre, year," +\
 topicB = sentiment_by_genre_year.rdd.map(lambda x: calculateValuesB(x)).toDF(schema=["genre", "year", "positive", "negative", "total", "ratio"])
 topicB = topicB.withColumn('question', f.lit('b'))
 topicB.show()
-#enviar a processed_vibes
 
 
 
@@ -165,8 +183,8 @@ themes_per_year = analyzed_df\
 topicC = themes_per_year.rdd.map(lambda x: getThemePerYear(x)).toDF(schema=["year", "themes"])
 topicC = topicC.withColumn('question', f.lit('c'))
 topicC.show(truncate=False)
-#enviar a processed_vibes
 
+'''
 data = [("reset", "flush")]
 rdd = spark.sparkContext.parallelize(data)
 dfFromRDD1 = rdd.toDF(schema=["key", "value"])
@@ -207,5 +225,5 @@ query = json_df \
   .option("kafka.bootstrap.servers", "10.0.0.2:9092") \
   .option("topic", "processed_vibes") \
   .save()
-
+'''
 
